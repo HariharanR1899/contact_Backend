@@ -144,7 +144,7 @@ app.post("/login", async (req, res) => {
     const token = jwt.sign({ userId: user.rows[0].id }, JWT_SECRET, {
       expiresIn: "1h",
     });
-    const userid = user.id;
+    const userid = user.rows[0].id;;
     res.json({ token, userid });
   } catch (err) {
     console.error(err.message);
