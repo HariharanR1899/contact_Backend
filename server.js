@@ -34,6 +34,10 @@ app.post("/contacts", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+    res.send("✅ Contacts API is running!");
+  });
+
 // Get All Contacts
 app.get("/contacts", async (req, res) => {
   try {
