@@ -131,20 +131,21 @@ app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (!user.rows.length) return res.status(400).json({ error: "Invalid email or password" });
+    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
+    if (!user.rows.length)
+      return res.status(400).json({ error: "Invalid email or password" });
 
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
-    if (!validPassword) return res.status(400).json({ error: "Invalid email or password" });
+    if (!validPassword)
+      return res.status(400).json({ error: "Invalid email or password" });
 
-    const token = jwt.sign({ userId: user.rows[0].id }, JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token,
-
-        user: { 
-            id: user.rows[0].id, 
-            email: user.rows[0].email 
-          } 
-     });
+    const token = jwt.sign({ userId: user.rows[0].id }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    const userid = user.id;
+    res.json({ token, userid });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -168,7 +169,10 @@ const authenticate = (req, res, next) => {
 // ✅ Fetch Contacts (Per User)
 app.get("/contacts", authenticate, async (req, res) => {
   try {
-    const contacts = await pool.query("SELECT * FROM contacts WHERE user_id = $1", [req.userId]);
+    const contacts = await pool.query(
+      "SELECT * FROM contacts WHERE user_id = $1",
+      [req.userId]
+    );
     res.json(contacts.rows);
   } catch (err) {
     console.error(err.message);
@@ -213,7 +217,10 @@ app.delete("/contacts/:id", authenticate, async (req, res) => {
   const { id } = req.params;
 
   try {
-    await pool.query("DELETE FROM contacts WHERE id = $1 AND user_id = $2", [id, req.userId]);
+    await pool.query("DELETE FROM contacts WHERE id = $1 AND user_id = $2", [
+      id,
+      req.userId,
+    ]);
     res.json({ message: "Contact deleted!" });
   } catch (err) {
     console.error(err.message);
