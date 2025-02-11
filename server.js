@@ -314,12 +314,24 @@ passport.deserializeUser((obj, done) => done(null, obj));
 // ✅ Google OAuth Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
+// app.get(
+//   "/auth/google/callback",
+//   passport.authenticate("google", { failureRedirect: "/" }),
+//   (req, res) => {
+//     const { token, userid } = req.user;
+//     res.redirect(`${process.env.FRONTEND_URL}/contacts?token=${token}&userid=${userid}`); // ✅ Redirecting to "/contacts"
+//   }
+// );
+
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     const { token, userid } = req.user;
-    res.redirect(`${process.env.FRONTEND_URL}/contacts?token=${token}&userid=${userid}`); // ✅ Redirecting to "/contacts"
+    const redirectUrl = `${process.env.FRONTEND_URL}/contacts?token=${encodeURIComponent(
+      token
+    )}&userid=${encodeURIComponent(userid)}`;
+    res.redirect(redirectUrl);
   }
 );
 
