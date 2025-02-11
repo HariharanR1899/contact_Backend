@@ -319,7 +319,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     const { token, userid } = req.user;
-    res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&userid=${userid}`);
+    res.redirect(`${process.env.FRONTEND_URL}/contacts?token=${token}&userid=${userid}`); // ✅ Redirecting to "/contacts"
   }
 );
 
