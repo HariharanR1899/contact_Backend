@@ -328,9 +328,19 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     const { token, userid } = req.user;
-    const redirectUrl = `${process.env.FRONTEND_URL}/contacts?token=${encodeURIComponent(
+
+    console.log("✅ Google OAuth Token:", token);
+    console.log("✅ Google OAuth UserID:", userid);
+
+    if (!token || !userid) {
+      return res.redirect(`${process.env.FRONTEND_URL}/?error=missing_token`);
+    }
+
+    const redirectUrl = `${process.env.FRONTEND_URL}/?token=${encodeURIComponent(
       token
     )}&userid=${encodeURIComponent(userid)}`;
+    
+    console.log("✅ Redirecting to:", redirectUrl);
     res.redirect(redirectUrl);
   }
 );
