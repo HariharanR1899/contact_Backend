@@ -291,10 +291,7 @@ passport.use(
         let user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
         if (!user.rows.length) {
-          user = await pool.query(
-            "INSERT INTO users (email, google_id) VALUES ($1, $2) RETURNING id, email",
-            [email, profile.id]
-          );
+          return done(null, false, { message: "No account found. Please sign up first." });
         }
 
         const token = jwt.sign({ userId: user.rows[0].id }, JWT_SECRET, { expiresIn: "1h" });
@@ -321,7 +318,7 @@ app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "em
 //     const { token, userid } = req.user;
 //     res.redirect(`${process.env.FRONTEND_URL}/contacts?token=${token}&userid=${userid}`); // ✅ Redirecting to "/contacts"
 //   }
-// );
+// );`` 
 
 app.get(
   "/auth/google/callback",
