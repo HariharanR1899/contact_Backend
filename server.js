@@ -401,23 +401,25 @@ app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "em
 
 app.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/auth/google/failure" }),
-  (req, res) => {
-    const { token, userid } = req.user;
+  passport.authenticate("google", { failureRedirect: "/login?error=NoAccount" }),
+  async (req, res) => {
+    try {
+      const { token, userid, isNewUser } = req.user;
 
-    console.log("✅ Google OAuth Token:", token);
-    console.log("✅ Google OAuth UserID:", userid);
+      if (!token || !userid) {
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=missing_token`);
+      }
 
-    if (!token || !userid) {
-      return res.redirect(`${process.env.FRONTEND_URL}/?error=missing_token`);
+      // ✅ Handle Google Signup vs Login
+      if (isNewUser) {
+        return res.redirect(`${process.env.FRONTEND_URL}/signup?signupSuccess=true`);
+      }
+
+      return res.redirect(`${process.env.FRONTEND_URL}/auth-redirect?token=${token}&userid=${userid}`);
+    } catch (error) {
+      console.error("Google OAuth Callback Error:", error);
+      res.redirect("/login?error=server_error");
     }
-
-    const redirectUrl = `${process.env.FRONTEND_URL}/?token=${encodeURIComponent(
-      token
-    )}&userid=${encodeURIComponent(userid)}`;
-    
-    console.log("✅ Redirecting to:", redirectUrl);
-    res.redirect(redirectUrl);
   }
 );
 
