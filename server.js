@@ -279,11 +279,12 @@ const transporter = nodemailer.createTransport({
 
 // ✅ Google OAuth Strategy
 passport.use(
+  "google-login",
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL + "/auth/google/login/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -291,7 +292,8 @@ passport.use(
         let user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
         if (!user.rows.length) {
-          return done(null, false, { message: "No account found. Please sign up first." });
+          console.log("🚀 No account found for:", email);
+          return done(null, false);
         }
 
         const token = jwt.sign({ userId: user.rows[0].id }, JWT_SECRET, { expiresIn: "1h" });
@@ -303,6 +305,83 @@ passport.use(
     }
   )
 );
+
+passport.use(
+  "google-signup",
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL + "/auth/google/signup/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const { email } = profile._json;
+        let user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+        if (user.rows.length > 0) {
+          console.log("🚀 Account already exists for:", email);
+          return done(null, false);
+        }
+
+        // ✅ Create a new user in DB
+        user = await pool.query(
+          "INSERT INTO users (email, google_id) VALUES ($1, $2) RETURNING id, email",
+          [email, profile.id]
+        );
+
+        console.log("✅ New Google account created for:", email);
+
+        return done(null, { userid: user.rows[0].id });
+      } catch (error) {
+        return done(error, null);
+      }
+    }
+  )
+);
+
+app.get(
+  "/auth/google/login",
+  passport.authenticate("google-login", { scope: ["profile", "email"] })
+);
+
+app.get(
+  "/auth/google/login/callback",
+  passport.authenticate("google-login", { failureRedirect: "/auth/google/login/failure" }),
+  (req, res) => {
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=NoAccount`);
+    }
+
+    const { token, userid } = req.user;
+    res.redirect(`${process.env.FRONTEND_URL}/?token=${encodeURIComponent(token)}&userid=${encodeURIComponent(userid)}`);
+  }
+);
+
+app.get(
+  "/auth/google/signup",
+  passport.authenticate("google-signup", { scope: ["profile", "email"] })
+);
+
+app.get(
+  "/auth/google/signup/callback",
+  passport.authenticate("google-signup", { failureRedirect: "/auth/google/signup/failure" }),
+  (req, res) => {
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=AlreadyExists`);
+    }
+
+    res.redirect(`${process.env.FRONTEND_URL}/login?success=SignedUp`);
+  }
+);
+
+app.get("/auth/google/signup/failure", (req, res) => {
+  res.redirect(`${process.env.FRONTEND_URL}/login?error=AlreadyExists`);
+});
+
+app.get("/auth/google/login/failure", (req, res) => {
+  res.redirect(`${process.env.FRONTEND_URL}/login?error=NoAccount`);
+});
 
 // ✅ Serialize & Deserialize User
 passport.serializeUser((user, done) => done(null, user));
