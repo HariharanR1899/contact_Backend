@@ -322,7 +322,7 @@ app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "em
 
 app.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
+  passport.authenticate("google", { failureRedirect: "/auth/google/failure" }),
   (req, res) => {
     const { token, userid } = req.user;
 
@@ -341,6 +341,10 @@ app.get(
     res.redirect(redirectUrl);
   }
 );
+
+app.get("/auth/google/failure", (req, res) => {
+  res.redirect(`${process.env.FRONTEND_URL}/?error=NoAccount`);
+});
 
 // ✅ Send OTP for Signup
 app.post("/send-otp", async (req, res) => {
