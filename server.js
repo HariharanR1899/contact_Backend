@@ -256,6 +256,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 const OTP_EXPIRY_TIME = 10 * 60 * 1000; // 10 minutes
 
 // ✅ Middleware
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  next();
+});
 app.use(cors());
 app.use(express.json());
 app.use(
@@ -267,6 +271,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 // ✅ Configure Email Transporter (Nodemailer)
 const transporter = nodemailer.createTransport({
