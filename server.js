@@ -347,7 +347,7 @@ app.get(
 
 app.get(
   "/auth/google/login/callback",
-  passport.authenticate("google-login", { failureRedirect: "/?error=NoAccount" }),
+  passport.authenticate("google-login", { failureRedirect: `${process.env.FRONTEND_URL}/?error=NoAccount` }),
   (req, res) => {
     if (!req.user) {
       return res.redirect(`${process.env.FRONTEND_URL}/?error=NoAccount`);
@@ -364,7 +364,7 @@ app.get(
 
 app.get(
   "/auth/google/signup/callback",
-  passport.authenticate("google-signup", { failureRedirect: "/signup?error=AlreadyExists" }),
+  passport.authenticate("google-signup", { failureRedirect: `${process.env.FRONTEND_URL}/signup?error=AlreadyExists` }),
   (req, res) => {
     if (!req.user) {
       return res.redirect(`${process.env.FRONTEND_URL}/signup?error=AlreadyExists`);
@@ -655,6 +655,10 @@ app.post("/reset-password", async (req, res) => {
     console.error("Error resetting password:", error);
     res.status(500).json({ error: "Server error" });
   }
+});
+
+app.get("*", (req, res) => {
+  res.redirect(process.env.FRONTEND_URL);
 });
 
 const PORT = process.env.PORT || 5001;
