@@ -375,7 +375,7 @@ app.get(
 );                                                                                                                
 
 app.get("/auth/google/signup/failure", (req, res) => {
-  res.redirect(`${process.env.FRONTEND_URL}/signup?error=AlreadyExists`);
+  res.redirect(`${process.env.FRONTEND_URL}/login?error=AlreadyExists`);
 });
 
 app.get("/auth/google/login/failure", (req, res) => {
