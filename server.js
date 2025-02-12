@@ -284,7 +284,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL + "/auth/google/login/callback",
+      callbackURL: `${process.env.GOOGLE_CALLBACK_URL}/auth/google/login/callback`, // FIXED ✅
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -312,7 +312,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL ,
+      callbackURL: `${process.env.GOOGLE_CALLBACK_URL}/auth/google/signup/callback`, // FIXED ✅
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -332,7 +332,7 @@ passport.use(
 
         console.log("✅ New Google account created for:", email);
 
-        return done(null, { userid: user.rows[0].id });
+        return done(null, { userid: user.rows[0].id, isNewUser: true }); // ✅ Mark as new user
       } catch (error) {
         return done(error, null);
       }
@@ -347,7 +347,7 @@ app.get(
 
 app.get(
   "/auth/google/login/callback",
-  passport.authenticate("google-login", { failureRedirect: "/auth/google/login/failure" }),
+  passport.authenticate("google-login", { failureRedirect: "/login?error=NoAccount" }),
   (req, res) => {
     if (!req.user) {
       return res.redirect(`${process.env.FRONTEND_URL}/login?error=NoAccount`);
@@ -357,7 +357,6 @@ app.get(
     res.redirect(`${process.env.FRONTEND_URL}/auth-redirect?token=${encodeURIComponent(token)}&userid=${encodeURIComponent(userid)}`);
   }
 );
-
 app.get(
   "/auth/google/signup",
   passport.authenticate("google-signup", { scope: ["profile", "email"] })
@@ -365,18 +364,18 @@ app.get(
 
 app.get(
   "/auth/google/signup/callback",
-  passport.authenticate("google-signup", { failureRedirect: "/auth/google/signup/failure" }),
+  passport.authenticate("google-signup", { failureRedirect: "/signup?error=AlreadyExists" }),
   (req, res) => {
     if (!req.user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=AlreadyExists`);
+      return res.redirect(`${process.env.FRONTEND_URL}/signup?error=AlreadyExists`);
     }
 
     res.redirect(`${process.env.FRONTEND_URL}/login?success=SignedUp`);
   }
-);
+);                                                                                                                
 
 app.get("/auth/google/signup/failure", (req, res) => {
-  res.redirect(`${process.env.FRONTEND_URL}/login?error=AlreadyExists`);
+  res.redirect(`${process.env.FRONTEND_URL}/signup?error=AlreadyExists`);
 });
 
 app.get("/auth/google/login/failure", (req, res) => {
