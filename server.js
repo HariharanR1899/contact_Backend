@@ -354,7 +354,7 @@ app.get(
     }
 
     const { token, userid } = req.user;
-    res.redirect(`${process.env.FRONTEND_URL}/?token=${encodeURIComponent(token)}&userid=${encodeURIComponent(userid)}`);
+    res.redirect(`${process.env.FRONTEND_URL}/auth-redirect?token=${encodeURIComponent(token)}&userid=${encodeURIComponent(userid)}`);
   }
 );
 
