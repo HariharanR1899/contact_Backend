@@ -347,10 +347,10 @@ app.get(
 
 app.get(
   "/auth/google/login/callback",
-  passport.authenticate("google-login", { failureRedirect: "/login?error=NoAccount" }),
+  passport.authenticate("google-login", { failureRedirect: "/?error=NoAccount" }),
   (req, res) => {
     if (!req.user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=NoAccount`);
+      return res.redirect(`${process.env.FRONTEND_URL}/?error=NoAccount`);
     }
 
     const { token, userid } = req.user;
@@ -370,16 +370,16 @@ app.get(
       return res.redirect(`${process.env.FRONTEND_URL}/signup?error=AlreadyExists`);
     }
 
-    res.redirect(`${process.env.FRONTEND_URL}/login?success=SignedUp`);
+    res.redirect(`${process.env.FRONTEND_URL}/?success=SignedUp`);
   }
 );                                                                                                                
 
 app.get("/auth/google/signup/failure", (req, res) => {
-  res.redirect(`${process.env.FRONTEND_URL}/login?error=AlreadyExists`);
+  res.redirect(`${process.env.FRONTEND_URL}/?error=AlreadyExists`);
 });
 
 app.get("/auth/google/login/failure", (req, res) => {
-  res.redirect(`${process.env.FRONTEND_URL}/login?error=NoAccount`);
+  res.redirect(`${process.env.FRONTEND_URL}/?error=NoAccount`);
 });
 
 // ✅ Serialize & Deserialize User
@@ -400,13 +400,13 @@ app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "em
 
 app.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login?error=NoAccount" }),
+  passport.authenticate("google", { failureRedirect: "/?error=NoAccount" }),
   async (req, res) => {
     try {
       const { token, userid, isNewUser } = req.user;
 
       if (!token || !userid) {
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=missing_token`);
+        return res.redirect(`${process.env.FRONTEND_URL}/?error=missing_token`);
       }
 
       // ✅ Handle Google Signup vs Login
@@ -417,7 +417,7 @@ app.get(
       return res.redirect(`${process.env.FRONTEND_URL}/auth-redirect?token=${token}&userid=${userid}`);
     } catch (error) {
       console.error("Google OAuth Callback Error:", error);
-      res.redirect("/login?error=server_error");
+      res.redirect("/?error=server_error");
     }
   }
 );
