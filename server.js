@@ -662,7 +662,9 @@ app.post("/reset-password", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
+app.get("/ping", (req, res) => {
+  res.status(200).send("Server is alive");
+});
 app.get("*", (req, res) => {
   res.redirect(process.env.FRONTEND_URL);
 });
@@ -670,9 +672,7 @@ app.get("*", (req, res) => {
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-app.get("/ping", (req, res) => {
-  res.status(200).send("Server is alive");
-});
+
 // ✅ Logout (Clears Session)
 app.get("/logout", (req, res) => {
   req.logout(() => {
