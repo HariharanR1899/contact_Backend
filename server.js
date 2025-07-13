@@ -435,7 +435,7 @@ app.get("/auth/google/failure", (req, res) => {
 app.post("/send-otp", async (req, res) => {
   const { email } = req.body;
   const otp = crypto.randomInt(100000, 999999).toString();
-
+console.log("💬 Attempting to send OTP to:", email);
   try {
     const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (existingUser.rows.length > 0) {
@@ -456,7 +456,8 @@ app.post("/send-otp", async (req, res) => {
 
     res.json({ message: "OTP sent to email." });
   } catch (error) {
-    console.error("Error sending OTP:", error);
+    // console.error("Error sending OTP:", error);
+    console.error("Error sending OTP:", error.message, error.stack);
     res.status(500).json({ error: "Error sending OTP" });
   }
 });
